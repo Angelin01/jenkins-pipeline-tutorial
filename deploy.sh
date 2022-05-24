@@ -15,20 +15,20 @@ version=$2
 
 artifact="$project-$version.jar"
 if [ ! -f "./target/$artifact" ]; then
-  echo "Failed finding artifact $artifact. Did you build your project?" >&2
+  echo "Failed finding artifact $artifact. Did you build your project? Try running 'mvn package'." >&2
   exit 1
 fi
 
 fake_deploy() {
-  local percent=$1
-  echo "Deploying... $percent%"
-  sleep 1
+  local deployTotal=0
+  while [ "$deployTotal" -lt 100 ]; do
+    echo "Deploying... $deployTotal%"
+    sleep 1
+    deployTotal=$(( deployTotal + (RANDOM % 40) ))
+  done
+  echo "Deploying... 100%"
 }
 
 echo "Deploying $project on version $version ($artifact)..."
-deployTotal=0
-while [ "$deployTotal" -lt 100 ]; do
-  fake_deploy "$deployTotal"
-  deployTotal=$(( deployTotal + (RANDOM % 25) ))
-done
+fake_deploy
 echo "Done! Deployed $project version $version ($artifact)."
