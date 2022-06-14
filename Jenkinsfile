@@ -14,19 +14,29 @@ pipeline {
             }
             steps {
                 // One or more steps need to be included within the steps block.
-                echo 'Clean step'
+                sh 'mvn clean'
             }
         }
 
-        stage('Build') {
+        stage('Complie') {
             steps {
-                echo 'Build step'
+                sh 'mvn compile'
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Test step'
+                 sh 'mvn verify'
+                 junit 'target/surefire-reports/*.xml'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                 script {
+                    def pom = readMavenPom(file: 'pom.xml')
+                    sh "./deploy.sh ${pom.getArtifactId()} ${pom.getVersion()}"
+                 }
             }
         }
     }
