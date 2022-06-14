@@ -13,31 +13,39 @@ pipeline {
                 expression { params.CLEAN_BEFORE }
             }
             steps {
-                // One or more steps need to be included within the steps block.
-                sh 'mvn clean'
+               mvn 'clean'
             }
         }
 
-        stage('Complie') {
+        stage('Build') {
             steps {
-                sh 'mvn compile'
+                mvn 'compile'
             }
         }
 
         stage('Test') {
             steps {
-                 sh 'mvn verify'
-                 junit 'target/surefire-reports/*.xml'
+                mvn 'verify'
+                junit 'target/surefire-reports/*.xml'
             }
         }
 
         stage('Deploy') {
             steps {
-                 script {
-                    def pom = readMavenPom(file: 'pom.xml')
-                    sh "./deploy.sh ${pom.getArtifactId()} ${pom.getVersion()}"
-                 }
+                script {
+                    def artifactId = readPom('project.artifactId')
+                    def version = readPom('project.version')
+                    sh "./deploy.sh $artifactId $version"
+                }
             }
         }
     }
+}
+
+def mvn(String args) {
+    sh "mvn --no-transfer-progress -B $args"
+}
+
+def readPom(String expression) {
+    return sh(script: """mvn help:evaluate -Dexpression="$expression" -q -DforceStdout""", returnStdout: true)
 }
